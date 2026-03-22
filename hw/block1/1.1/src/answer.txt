@@ -1,0 +1,12 @@
+Thread A starts thread B and joins. Uncaught exception happens in thread B.
+
+    What happens in thread B?
+    What happens in thread A?
+    What if thread C joins thread B after exception happened?
+    What if thread D joins thread A?
+
+Answers:
+    1. Поток B выбросит необработанное исключение и немедленно завершится
+    2. Поток A запускает B, после исключения и завершения в котором, снимает блокировку и продолжает выполнение
+    3. Так как B уже завершен, C спокойно вызовет join() на нем, управление вернется мгновенно, C продолжит работу
+    4. D ожидает завершения A, после его завершения свободно завершает работу, так как A тоже свободно ее завершает
