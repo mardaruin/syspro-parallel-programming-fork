@@ -1,0 +1,39 @@
+In the Bakery lock, flag[A] is a Boolean flag indicating whether A wants to
+enter the critical section, and label[A] is an integer that indicates the thread’s
+relative order when entering the bakery, for each thread A
+
+1 class Bakeryimplements Lock{
+2 boolean[]flag;
+3 Label[]label;
+4 public Bakery(intn){
+5 flag = newboolean[n];
+6 label= new Label[n];
+7 for (int i=0;i<n;i++){
+8 flag[i]= false;label[i]=0;
+9 }
+10 }
+11 publicvoid lock() {
+12 int i=ThreadID.get();
+13 flag[i] = true;
+14 label[i]=max(label[0],...,label[n-1])+1;
+15 while ((∃k!=i)(flag[k]&&(label[k],k)<<(label[i],i))){};
+16 }
+17 publicvoid unlock() {
+18 flag[ThreadID.get()]= false;
+19 }
+20 }
+
+1. Deadlock-free: в любой момент среди ждущих входа существует пара с наименьшей парой (label[i],i) в лексикографическом порядке.
+    Множество пар конечно и полностью упорядочено отношением <<. Значит в любой момент существует уникальный минимум - поток A с наименьшей меткой.
+    A ожидает, только если есть другой поток, ждущий с меткой меньше. Значит поток с наименьшей парой никогда не будет ждать и войдет в критическую секцию
+
+2. First-come-first-served: дверной проем - интервал между 13 flag[i] = true;
+                                                           14 label[i]=max(label[0],...,label[n-1])+1;
+    Покажем, что если A в дверном проеме раньше B, то A войдет в критическую секцию раньше. Так как мы работаем в модели частичного порядка, не рассматривая
+    пересечения, то верно, что 1 поток возьмет метку раньше, чем 2 начнет читать чужие метки. Значит номер 2 потока точно больше 1. Значит 2 ждет выхода 1
+    writeA(label[A]) → readB(label[A]) → writeB(label[B]) → readB(flag[A])
+
+3. Mutual exclusion: предположим противное. 1 и 2 оба в критической секции. Пусть (label[A],A)<<(label[B],B). Это означает, что либо label[A] < label[B],
+    либо метки равны, но id(A) < id(B). 2 вошел => не было потока (label[k],k)<<(label[B],B). Но если на момент проверки флаг 1 истинен, то условие бы было
+    верно и поток 2 не вошел бы. Значит флаг 1 не истинен, значит чтение флага1 2 потоком произошла раньше записи флага1 1 потоком. Это противоречит
+    порядку (label[A],A)<<(label[B],B).
